@@ -22,7 +22,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String firtName;
+    private String firstName;
     private String lastName;
     @Column(unique = true)
     private String document;
@@ -33,7 +33,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
     public User(UserDTO data) {
-        this.firtName = data.firstName();
+        this.firstName = data.firstName();
         this.lastName = data.lastName();
         this.balance = data.balance();
         this.userType = data.userType();
