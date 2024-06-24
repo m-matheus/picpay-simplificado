@@ -29,7 +29,7 @@ public class TransactionService {
     @Autowired
     private NotificationService notificationService;
 
-    public Transaction createTransaction(TransactionDTO transaction) {
+    public Transaction createTransaction(TransactionDTO transaction) throws Exception {
         User sender = userService.findUserById(transaction.senderId());
         User receiver = userService.findUserById(transaction.receiverId());
 
@@ -37,7 +37,7 @@ public class TransactionService {
 
         boolean isAuthorized = this.authorizeTransaction(sender, transaction.value());
         if(!isAuthorized) {
-            throw new IllegalArgumentException("Transaction not authorized");
+            throw new Exception("Transaction not authorized");
         }
 
         Transaction newTransaction = new Transaction();
