@@ -26,7 +26,10 @@ public class TransactionService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public void createTransaction(TransactionDTO transaction) {
+    @Autowired
+    private NotificationService notificationService;
+
+    public Transaction createTransaction(TransactionDTO transaction) {
         User sender = userService.findUserById(transaction.senderId());
         User receiver = userService.findUserById(transaction.receiverId());
 
@@ -49,16 +52,29 @@ public class TransactionService {
         this.repository.save(newTransaction);
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
+
+        this.notificationService.sendNotification(sender, "Transaction completed successfully!");
+        this.notificationService.sendNotification(receiver, "You received a new transaction!");
+
+        return newTransaction;
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value) {
+        @SuppressWarnings("rawtypes")
         ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
-
-        if(authorizationResponse.getStatusCode() == HttpStatus.OK) {
-            String message = (String) authorizationResponse.getBody().get("message");
-            return "Autorizado".equalsIgnoreCase(message);
-        } else {
-            return false;
+    
+        if (authorizationResponse.getStatusCode() == HttpStatus.OK) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> responseBody = authorizationResponse.getBody();
+            if (responseBody != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+                if (data != null) {
+                    Boolean authorization = (Boolean) data.get("authorization");
+                    return Boolean.TRUE.equals(authorization);
+                }
+            }
         }
+        return false;
     }
 }
